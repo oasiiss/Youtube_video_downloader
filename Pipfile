@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 django = "*"
 python-decouple = "*"
-channels = "*"
+channels = {extras = ["daphne"], version = "*"}
 
 [dev-packages]
 

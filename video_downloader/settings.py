@@ -20,7 +20,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'channels',
+    'daphne',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     'downloader',
 ]
 
-ASGI_APPLICATION = 'video_downloader.asgi,application'
+ASGI_APPLICATION = 'video_downloader.asgi.application'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
