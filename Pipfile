@@ -11,6 +11,7 @@ pytube = "*"
 youtube-dl = "*"
 moviepy = "*"
 pydub = "*"
+gunicorn = "*"
 
 [dev-packages]
 
