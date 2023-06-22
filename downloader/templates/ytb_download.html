@@ -105,6 +105,7 @@
 
             if(data.status == 2){
                 $("#progress_div").show();
+                console.log(data.progress)
                 var progressBar = document.querySelector('.progress-bar');
                 progressBar.style.width = data.progress + '%';
                 $(".progress-bar").text(data.progress + '%')
@@ -118,17 +119,30 @@
                     $("#continue_btn").attr("href", `http://${window.location.host}/index`);
                     $("#video_iframe").attr("src", "https://www.youtube.com/embed/" + data.video_id);
                     $("#download_btn").click(function() {
-                        // İndirilecek dosyanın adını al
-                        var fileName = data.file_name;  // İndirilecek dosyanın adını buraya yazın
-                    
-                        // Dosyayı indir
+                        var fileName = data.file_name;
                         var link = document.createElement("a");
-                        link.href = "{% get_media_prefix %}" + fileName;  // Medya URL'sini kullanarak doğru yol oluşturulur
+                        link.href = "{% get_media_prefix %}" + fileName;
                         link.download = fileName;
                         link.target = "_blank";
                         link.click();
                     });
                     console.log(data)
+                }, 2000);
+            }
+            else if(data.status == 1){
+                setTimeout(function() {
+                    $("#progress_div").hide();
+                    $("#download_div").show();
+                    $("#continue_btn").attr("href", `http://${window.location.host}/index`);
+                    $("#video_iframe").attr("src", "https://www.youtube.com/embed/" + data.video_id);
+                    $("#download_btn").click(function() {
+                        var fileName = data.file_name;
+                        var link = document.createElement("a");
+                        link.href = "{% get_media_prefix %}" + fileName;
+                        link.download = fileName;
+                        link.target = "_blank";
+                        link.click();
+                    });
                 }, 2000);
             }
             else if (data.status == 4){

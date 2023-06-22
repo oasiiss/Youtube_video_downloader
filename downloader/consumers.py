@@ -1,4 +1,4 @@
-import json, os
+import json, os, time
 from channels.generic.websocket import WebsocketConsumer
 from pytube import YouTube
 from moviepy.editor import VideoFileClip
@@ -57,12 +57,26 @@ class DownloadConsumer(WebsocketConsumer):
                     }))
 
                 elif video_format == 'mp4':
-                    video_stream = yt_video.streams.filter(progressive=True).first()
-                    video_stream.download(output_path='media/mp4')
-                    self.send(text_data=json.dumps({
-                        "status": 1,
-                        "message": "Video found and downloaded as video"
-                    }))
+                    self.send(text_data=json.dumps({"status":2, "progress":10}))
+                    try:
+                        self.send(text_data=json.dumps({"status":2, "progress":20}))
+                        time.sleep(1)
+                        self.send(text_data=json.dumps({"status":2, "progress":50}))
+                        out_file = yt_video.streams.filter(progressive = True, file_extension = "mp4").first().download(output_path = "media/mp4")
+                        self.send(text_data=json.dumps({"status":2, "progress":85}))
+                        video_id = video_url.split("=")[-1]
+                        out_file = out_file.split('/')[-1].replace("\\", "/")
+                        self.send(text_data=json.dumps({"status":2, "progress":100}))
+                        self.send(text_data=json.dumps({
+                            "status": 1,
+                            "file_name": out_file,
+                            "video_id": video_id,
+                        }))
+                    except Exception as error:
+                        self.send(text_data=json.dumps({
+                            "status": 4,
+                            "message": error
+                        }))
 
                 else:
                     self.send(text_data=json.dumps({
