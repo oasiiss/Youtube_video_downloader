@@ -72,6 +72,7 @@
                     <button type="submit" class="btn btn-primary">Dönüştür</button>
                 </div>
             </div>
+            <p style="color: red;" id="error_message"></p>
         </form>
 
         <div class="row" id="progress_div" style="display:none; margin-top: 50px;">
@@ -146,7 +147,12 @@
                 }, 2000);
             }
             else if (data.status == 4){
-                console.log(data.message)
+                errorBox = document.getElementById("error_message");
+                errorBox.textContent = data.message;
+                errorBox.style.display = "block";
+                setTimeout(function() {
+                  errorBox.style.display = "none";
+                }, 4000);
             }
         }
 

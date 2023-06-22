@@ -26,7 +26,7 @@ class DownloadConsumer(WebsocketConsumer):
             if video_duration_minutes > 10:
                 self.send(text_data=json.dumps({
                     "status":4,
-                    "message":"video longer than 10 minutes"
+                    "message":" Video maksimum 10 dakika olmalı"
                 }))
             else:
                 self.send(text_data=json.dumps({"status":2, "progress":10}))
@@ -53,7 +53,7 @@ class DownloadConsumer(WebsocketConsumer):
                         "status": 3,
                         "video_id": video_id,
                         "file_name": file_name,
-                        "message": "Video found and downloaded as audio",
+                        "message": "Video bulundu ve mp4 olarak yüklendi",
                     }))
 
                 elif video_format == 'mp4':
@@ -77,11 +77,10 @@ class DownloadConsumer(WebsocketConsumer):
                             "status": 4,
                             "message": error
                         }))
-
                 else:
                     self.send(text_data=json.dumps({
-                        "status": 3,
-                        "message": "Invalid video format"
+                        "status": 4,
+                        "message": "Video formatı geçersiz"
                     }))
         except Exception as error:
             self.send(text_data=json.dumps({
