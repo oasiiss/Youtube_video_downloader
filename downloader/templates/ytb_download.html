@@ -1,0 +1,74 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+
+    <style>
+        html, body {
+            height: 100%;
+        }
+    
+        body {
+            background-image: url('{% static "img/wallpaper.jpg" %}');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .transparent {
+            background-color: #ffffff;
+            opacity: 0.6;
+            filter: alpha(opacity=100);
+            transition: all 1s;
+        }
+
+        .transparent:hover {
+            background-color: #ffffff;
+            opacity: 1;
+        }
+    </style>
+
+  </head>
+  <body>
+    <div class="container" style="margin-top: %50%;">
+        <form method="get" action="{% url 'convert' %}">
+            <div class="row">
+                <div class="col-8">
+                    <div class="form-group">
+                        <input type="text" class="form-control transparent" id="url" name="url" placeholder="Video URL" required>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <select class="form-select transparent" id="format" name="format">
+                            <option value="mp3">MP3</option>
+                            <option value="mp4">MP4</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-2 " >
+                    <button type="submit" class="btn btn-primary">Dönüştür</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="row" style="display: none;">
+            <div class="progress col-7 mt-3 mx-auto">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  </body>
+</html>
