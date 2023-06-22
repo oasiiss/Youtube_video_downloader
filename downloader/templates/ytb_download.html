@@ -34,21 +34,35 @@
             background-color: #ffffff;
             opacity: 1;
         }
+
+        #download_div{
+            width: 50%;
+            height: 40%;
+            margin: 39px calc((100% - 50%)/2);
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            transition: 0.5s;
+            text-align: center;
+        }
     </style>
 
   </head>
   <body>
     <div class="container" style="margin-top: %50%;">
-        <form method="get" action="{% url 'convert' %}">
-            <div class="row">
+        <form id="form">
+            <div class="row" id="input_div">
                 <div class="col-8">
                     <div class="form-group">
-                        <input type="text" class="form-control transparent" id="url" name="url" placeholder="Video URL" required>
+                        <input type="text" name="video_url" class="form-control transparent" id="url" placeholder="Video URL" required>
                     </div>
                 </div>
                 <div class="col-2">
                     <div class="form-group">
-                        <select class="form-select transparent" id="format" name="format">
+                        <select class="form-select transparent" id="format" name="video_format">
                             <option value="mp3">MP3</option>
                             <option value="mp4">MP4</option>
                         </select>
@@ -60,9 +74,23 @@
             </div>
         </form>
 
-        <div class="row" style="display: none;">
-            <div class="progress col-7 mt-3 mx-auto">
-                <div class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        <div class="row" id="progress_div" style="display:none; margin-top: 50px;">
+            <div class="progress" style="height: 20px; padding: 0;" role="progressbar" aria-label="Animated striped example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0;"></div>
+            </div>
+        </div>
+
+        <div class="row" id="download_div" style="display:none;">
+            <div class="col-4">
+              <iframe id="video_iframe" height="200px" src="https://www.youtube.com/embed/" frameborder="0" allowfullscreen></iframe>
+            </div>
+            <div style="margin-left: 200px;" class="col-1 mt-5">
+              <div class="mb-3">
+                <button id="download_btn" type="submit" class="btn btn-primary" style="width:70px;">İndir</button>
+              </div>
+              <div>
+                <a href="" id="continue_btn" type="submit" class="btn btn-primary" style="width:70px;">Devam</a>
+              </div>
             </div>
         </div>
     </div>
@@ -74,8 +102,51 @@
 
         socket.onmessage = function(e){
             let data = JSON.parse(e.data)
-            console.log(data)
+
+            if(data.status == 2){
+                $("#progress_div").show();
+                var progressBar = document.querySelector('.progress-bar');
+                progressBar.style.width = data.progress + '%';
+                $(".progress-bar").text(data.progress + '%')
+                progressBar.setAttribute('aria-valuenow', data.progress);
+
+            }
+            else if(data.status == 3){
+                setTimeout(function() {
+                    $("#progress_div").hide();
+                    $("#download_div").show();
+                    $("#continue_btn").attr("href", `http://${window.location.host}/index`);
+                    $("#video_iframe").attr("src", "https://www.youtube.com/embed/" + data.video_id);
+                    $("#download_btn").click(function() {
+                        // İndirilecek dosyanın adını al
+                        var fileName = data.file_name;  // İndirilecek dosyanın adını buraya yazın
+                    
+                        // Dosyayı indir
+                        var link = document.createElement("a");
+                        link.href = "{% get_media_prefix %}" + fileName;  // Medya URL'sini kullanarak doğru yol oluşturulur
+                        link.download = fileName;
+                        link.target = "_blank";
+                        link.click();
+                    });
+                    console.log(data)
+                }, 2000);
+            }
+            else if (data.status == 4){
+                console.log(data.message)
+            }
         }
+
+        let form = document.getElementById('form')
+        form.addEventListener('submit', (e)=>{
+            e.preventDefault()
+            let video_url = e.target.video_url.value
+            let video_format = e.target.video_format.value
+
+            socket.send(JSON.stringify({
+                'video_url' : video_url,
+                'video_format' : video_format
+            }))
+        })
 
     </script>
 
