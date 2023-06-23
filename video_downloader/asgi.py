@@ -18,9 +18,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'video_downloader.settings')
 
 application = ProtocolTypeRouter({
     'http':get_asgi_application(),
-    'websocket':AuthMiddlewareStack(
-        URLRouter(
-            downloader.routing.websocket_urlpatterns
-        )
-    )
+    "websocket": URLRouter(
+        downloader.routing.websocket_urlpatterns
+    ),
 })

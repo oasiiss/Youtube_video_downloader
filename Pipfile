@@ -7,11 +7,11 @@ name = "pypi"
 django = "*"
 python-decouple = "*"
 channels = {extras = ["daphne"], version = "*"}
-pytube = "*"
 youtube-dl = "*"
 moviepy = "*"
 pydub = "*"
 gunicorn = "*"
+pytube = "*"
 
 [dev-packages]
 
