@@ -106,7 +106,6 @@
 
             if(data.status == 2){
                 $("#progress_div").show();
-                console.log(data.progress)
                 var progressBar = document.querySelector('.progress-bar');
                 progressBar.style.width = data.progress + '%';
                 $(".progress-bar").text(data.progress + '%')
@@ -122,12 +121,11 @@
                     $("#download_btn").click(function() {
                         var fileName = data.file_name;
                         var link = document.createElement("a");
-                        link.href = "{% get_media_prefix %}" + fileName;
+                        link.href = fileName;
                         link.download = fileName;
                         link.target = "_blank";
                         link.click();
                     });
-                    console.log(data)
                 }, 2000);
             }
             else if(data.status == 1){
@@ -139,7 +137,7 @@
                     $("#download_btn").click(function() {
                         var fileName = data.file_name;
                         var link = document.createElement("a");
-                        link.href = "{% get_media_prefix %}" + fileName;
+                        link.href = fileName;
                         link.download = fileName;
                         link.target = "_blank";
                         link.click();

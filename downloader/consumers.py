@@ -2,6 +2,8 @@ import json, os, time
 from channels.generic.websocket import WebsocketConsumer
 from pytube import YouTube
 from moviepy.editor import VideoFileClip
+from yt_dlp import YoutubeDL
+import re
 
 
 class DownloadConsumer(WebsocketConsumer):
@@ -29,49 +31,103 @@ class DownloadConsumer(WebsocketConsumer):
                     "message":" Video maksimum 10 dakika olmalı"
                 }))
             else:
-                self.send(text_data=json.dumps({"status":2, "progress":10}))
-
                 video_title = yt_video.title
 
-                self.send(text_data=json.dumps({"status":2, "progress":20}))
-
                 if video_format == 'mp3':
-                    video = yt_video.streams.filter(only_audio=True).first()
-                    self.send(text_data=json.dumps({"status":2, "progress":30}))
-                    out_file = video.download(output_path='media/mp3')
-                    self.send(text_data=json.dumps({"status":2, "progress":70}))
-                    base, ext = os.path.splitext(out_file)
-                    self.send(text_data=json.dumps({"status":2, "progress":75}))
-                    new_file = base + '.mp3'
-                    self.send(text_data=json.dumps({"status":2, "progress":80}))
-                    os.rename(out_file, new_file)
-                    self.send(text_data=json.dumps({"status":2, "progress":95}))
-                    file_name = new_file.split('/')[-1].replace('\\', '/')
-                    video_id = video_url.split("=")[-1]
-                    self.send(text_data=json.dumps({"status":2, "progress":100}))
-                    self.send(text_data=json.dumps({
-                        "status": 3,
-                        "video_id": video_id,
-                        "file_name": file_name,
-                        "message": "Video bulundu ve mp4 olarak yüklendi",
-                    }))
+                    try:
+                        def progress_hook(d):
+                            if d['status'] == 'downloading':
+                                percent = d['_percent_str']
+                                percent = re.findall(r'\d+\.\d+', percent)[0]
+                                percent = percent.replace("%", "")
+                                self.send(text_data=json.dumps({"status":2, "progress":percent}))
+                                
+
+                            elif d['status'] == 'finished':
+                                video_id = video_url.split("=")[-1]
+                                file_name = str(str(d['filename']).replace("\\", "/").split(".")[-2]) + ".mp3"
+                                self.send(text_data=json.dumps({
+                                    "status": 3,
+                                    "video_id": video_id,
+                                    "file_name": file_name,
+                                    "message": "Video bulundu ve mp3 olarak yüklendi",
+                                }))
+
+                        ydl_opts = {
+                            'format': 'bestaudio/best',  # En iyi ses kalitesini seçer
+                            'postprocessors': [{
+                                'key': 'FFmpegExtractAudio',
+                                'preferredcodec': 'mp3',  # Ses dosyası formatı olarak MP3 seçer
+                                'preferredquality': '192',  # Ses kalitesini belirler (Varsayılan: 192kbps)
+                            }],
+                            'outtmpl': 'media/mp3/%(title)s.%(ext)s',  # İndirilen MP3 dosyasının çıktı yolu ve adı
+                            'progress_hooks': [progress_hook]
+                        }
+
+                        with YoutubeDL(ydl_opts) as ydl:
+                            ydl.download([video_url])
+
+                    except Exception as error:
+                        self.send(text_data=json.dumps({
+                            "status": 4,
+                            "message": error
+                        }))
+
+
 
                 elif video_format == 'mp4':
+
                     self.send(text_data=json.dumps({"status":2, "progress":10}))
                     try:
-                        self.send(text_data=json.dumps({"status":2, "progress":20}))
-                        time.sleep(1)
-                        self.send(text_data=json.dumps({"status":2, "progress":50}))
-                        out_file = yt_video.streams.filter(progressive = True, file_extension = "mp4").first().download(output_path = "media/mp4")
-                        self.send(text_data=json.dumps({"status":2, "progress":85}))
-                        video_id = video_url.split("=")[-1]
-                        out_file = out_file.split('/')[-1].replace("\\", "/")
-                        self.send(text_data=json.dumps({"status":2, "progress":100}))
-                        self.send(text_data=json.dumps({
-                            "status": 1,
-                            "file_name": out_file,
-                            "video_id": video_id,
-                        }))
+                        global status
+                        status = False
+                        def progress_hook(d):
+                            if d['status'] == 'downloading':
+                                percent = d['_percent_str']
+                                percent = re.findall(r'\d+\.\d+', percent)[0]
+                                percent = percent.replace("%", "")
+                                self.send(text_data=json.dumps({"status":2, "progress":percent}))
+                                
+
+                            elif d['status'] == 'finished':
+                                global status
+                                status = True
+                                video_id = video_url.split("=")[-1]
+                                file_name = str(str(d['filename']).split(".")[0].replace("\\", "/")) + ".mp4"
+                                self.send(text_data=json.dumps({
+                                    "status": 1,
+                                    "video_id": video_id,
+                                    "file_name": file_name,
+                                    "message": "Video bulundu ve mp4 olarak yüklendi",
+                                }))
+
+                        def post_hook(d):
+                            global status
+                            if not status:
+                                self.send(text_data=json.dumps({"status":2, "progress":100}))
+                                video_id = video_url.split("=")[-1]
+                                file_name = "media/mp4/" + str(d.split("\media\mp4\\")[-1])
+                                self.send(text_data=json.dumps({
+                                    "status": 1,
+                                    "video_id": video_id,
+                                    "file_name": file_name,
+                                    "message": "Video bulundu ve mp4 olarak yüklendi",
+                                }))
+
+                        ydl_opts = {
+                            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',  # En iyi mp4 formatında videoyu seçer
+                            'outtmpl': 'media/mp4/%(title)s.%(ext)s',  # İndirilen MP3 dosyasının çıktı yolu ve adı
+                            'progress_hooks': [progress_hook],
+                                'postprocessors': [{
+                                'key': 'FFmpegVideoConvertor',
+                                'preferedformat': 'mp4',  # Video formatını mp4 olarak değiştirir
+                            }],
+                            'post_hooks': [post_hook]
+                        }
+
+                        with YoutubeDL(ydl_opts) as ydl:
+                            ydl.download([video_url])
+
                     except Exception as error:
                         self.send(text_data=json.dumps({
                             "status": 4,
@@ -82,6 +138,7 @@ class DownloadConsumer(WebsocketConsumer):
                         "status": 4,
                         "message": "Video formatı geçersiz"
                     }))
+                    
         except Exception as error:
             self.send(text_data=json.dumps({
                 "status":4,

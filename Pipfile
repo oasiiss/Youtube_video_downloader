@@ -7,11 +7,15 @@ name = "pypi"
 django = "*"
 python-decouple = "*"
 channels = {extras = ["daphne"], version = "*"}
-youtube-dl = "*"
 moviepy = "*"
 pydub = "*"
 gunicorn = "*"
 pytube = "*"
+ffmpeg = "*"
+youtube-dl = "*"
+yt-dlp = "*"
+ffmpeg-python = "*"
+ffprobe-python = "*"
 
 [dev-packages]
 
