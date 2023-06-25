@@ -3,6 +3,7 @@
 **demo :** https://www.osmanefekurt.site
 
 
+
 **Kurulum;**
 
 ```
@@ -36,6 +37,8 @@ python manage.py collectstatic
 *Static dosyalarını main_static dizininde topluyoruz*
 
 
+
+
 *Video indirme işlemi sıkıntısız çalışabilmesi için sistemimize ffmpeg kütüphanesini kurmamız gerekiyor*
 
 **Windows için**
@@ -53,3 +56,9 @@ brew install ffmpeg
 sudo apt-get install ffmpeg
 ```
 
+
+
+*Kurulum tamamlandı. Projeyi çalıştırmak için;*
+```
+python manage.py runserver
+```
