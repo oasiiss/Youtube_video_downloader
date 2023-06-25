@@ -14,7 +14,7 @@
         }
     
         body {
-            background-image: url('{% static "img/wallpaper.jpg" %}');
+            background-image: url('../static/img/wallpaper.jpg');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
@@ -105,6 +105,7 @@
             let data = JSON.parse(e.data)
 
             if(data.status == 2){
+                $("#input_div").hide();
                 $("#progress_div").show();
                 var progressBar = document.querySelector('.progress-bar');
                 progressBar.style.width = data.progress + '%';
@@ -126,7 +127,6 @@
                         link.target = "_blank";
                         link.click();
                     });
-                    console.log(data)
                 }, 2000);
             }
             else if(data.status == 1){
@@ -143,7 +143,6 @@
                         link.target = "_blank";
                         link.click();
                     });
-                    console.log(data)
                 }, 2000);
             }
             else if (data.status == 4){
