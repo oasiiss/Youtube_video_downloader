@@ -45,7 +45,9 @@ class DownloadConsumer(WebsocketConsumer):
 
                             elif d['status'] == 'finished':
                                 video_id = video_url.split("=")[-1]
-                                file_name = str(str(d['filename']).replace("\\", "/").split(".")[-2]) + ".mp3"
+                                # file_name = str(str(d['filename']).replace("\\", "/").split(".")[-2]) + ".mp3"
+                                file_name = str(d["filename"]).replace("\\", "/").split(".")
+                                file_name = ".".join(file_name[:-1]) + ".mp3"
                                 self.send(text_data=json.dumps({
                                     "status": 3,
                                     "video_id": video_id,
@@ -77,42 +79,26 @@ class DownloadConsumer(WebsocketConsumer):
 
                 elif video_format == 'mp4':
 
-                    self.send(text_data=json.dumps({"status":2, "progress":10}))
                     try:
-                        global status
-                        status = False
                         def progress_hook(d):
                             if d['status'] == 'downloading':
                                 percent = d['_percent_str']
                                 percent = re.findall(r'\d+\.\d+', percent)[0]
                                 percent = percent.replace("%", "")
                                 self.send(text_data=json.dumps({"status":2, "progress":percent}))
-                                
-
-                            elif d['status'] == 'finished':
-                                global status
-                                status = True
-                                video_id = video_url.split("=")[-1]
-                                file_name = str(str(d['filename']).split(".")[0].replace("\\", "/")) + ".mp4"
-                                self.send(text_data=json.dumps({
-                                    "status": 1,
-                                    "video_id": video_id,
-                                    "file_name": file_name,
-                                    "message": "Video bulundu ve mp4 olarak yüklendi",
-                                }))
 
                         def post_hook(d):
-                            global status
-                            if not status:
-                                self.send(text_data=json.dumps({"status":2, "progress":100}))
-                                video_id = video_url.split("=")[-1]
-                                file_name = "media/mp4/" + str(d.split("\media\mp4\\")[-1])
-                                self.send(text_data=json.dumps({
-                                    "status": 1,
-                                    "video_id": video_id,
-                                    "file_name": file_name,
-                                    "message": "Video bulundu ve mp4 olarak yüklendi",
-                                }))
+                            video_id = video_url.split("=")[-1]
+                            # file_name = str(str(d['filename']).split(".")[0].replace("\\", "/")) + ".mp4"
+                            file_name = d.replace("\\", "/")
+                            file_name = "media/mp4/" + "/".join(file_name.split("mp4/")[1:])
+                            # file_name = ".".join(file_name[:-2]).replace("\\", "/") + ".mp4"
+                            self.send(text_data=json.dumps({
+                                "status": 1,
+                                "video_id": video_id,
+                                "file_name": file_name,
+                                "message": "Video bulundu ve mp4 olarak yüklendiiiii",
+                            }))
 
                         ydl_opts = {
                             'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',  # En iyi mp4 formatında videoyu seçer
