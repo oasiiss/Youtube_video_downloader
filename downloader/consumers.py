@@ -32,6 +32,11 @@ class DownloadConsumer(WebsocketConsumer):
                 }))
             else:
                 video_title = yt_video.title
+                video_title = video_title.replace("/", "-")
+                video_title = video_title.replace("\\", "-")
+                video_title = video_title.replace("|", "-")
+                video_title = video_title.replace("│", "-")
+                video_title = video_title.replace("'", "")
 
                 if video_format == 'mp3':
                     try:
@@ -62,7 +67,7 @@ class DownloadConsumer(WebsocketConsumer):
                                 'preferredcodec': 'mp3',  # Ses dosyası formatı olarak MP3 seçer
                                 'preferredquality': '192',  # Ses kalitesini belirler (Varsayılan: 192kbps)
                             }],
-                            'outtmpl': 'media/mp3/%(title)s.%(ext)s',  # İndirilen MP3 dosyasının çıktı yolu ve adı
+                            'outtmpl': f'media/mp3/{video_title}.%(ext)s',  # İndirilen MP3 dosyasının çıktı yolu ve adı
                             'progress_hooks': [progress_hook]
                         }
 
