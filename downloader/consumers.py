@@ -4,6 +4,9 @@ from pytube import YouTube
 from moviepy.editor import VideoFileClip
 from yt_dlp import YoutubeDL
 import re
+from django.utils.text import slugify
+
+
 
 
 class DownloadConsumer(WebsocketConsumer):
@@ -31,12 +34,7 @@ class DownloadConsumer(WebsocketConsumer):
                     "message":" Video maksimum 10 dakika olmalı"
                 }))
             else:
-                video_title = yt_video.title
-                video_title = video_title.replace("/", "-")
-                video_title = video_title.replace("\\", "-")
-                video_title = video_title.replace("|", "-")
-                video_title = video_title.replace("│", "-")
-                video_title = video_title.replace("'", "")
+                video_title = slugify(yt_video.title)
 
                 if video_format == 'mp3':
                     try:
@@ -50,13 +48,14 @@ class DownloadConsumer(WebsocketConsumer):
 
                             elif d['status'] == 'finished':
                                 video_id = video_url.split("=")[-1]
-                                # file_name = str(str(d['filename']).replace("\\", "/").split(".")[-2]) + ".mp3"
-                                file_name = str(d["filename"]).replace("\\", "/").split(".")
-                                file_name = ".".join(file_name[:-1]) + ".mp3"
+                                file_name = str(d["filename"]).split(".")
+                                file_name = str(".".join(file_name[:-1]) + ".mp3").replace("media/", "")
+                                file_title = video_title.replace("-", " ")
                                 self.send(text_data=json.dumps({
                                     "status": 3,
                                     "video_id": video_id,
                                     "file_name": file_name,
+                                    "file_title": file_title,
                                     "message": "Video bulundu ve mp3 olarak yüklendi",
                                 }))
 
@@ -83,7 +82,7 @@ class DownloadConsumer(WebsocketConsumer):
 
 
                 elif video_format == 'mp4':
-
+                    video_title = slugify(yt_video.title)
                     try:
                         def progress_hook(d):
                             if d['status'] == 'downloading':
@@ -94,20 +93,20 @@ class DownloadConsumer(WebsocketConsumer):
 
                         def post_hook(d):
                             video_id = video_url.split("=")[-1]
-                            # file_name = str(str(d['filename']).split(".")[0].replace("\\", "/")) + ".mp4"
                             file_name = d.replace("\\", "/")
                             file_name = "media/mp4/" + "/".join(file_name.split("mp4/")[1:])
-                            # file_name = ".".join(file_name[:-2]).replace("\\", "/") + ".mp4"
+                            file_title = video_title.replace("-", " ")
                             self.send(text_data=json.dumps({
                                 "status": 1,
                                 "video_id": video_id,
                                 "file_name": file_name,
+                                "file_title": file_title,
                                 "message": "Video bulundu ve mp4 olarak yüklendiiiii",
                             }))
 
                         ydl_opts = {
                             'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',  # En iyi mp4 formatında videoyu seçer
-                            'outtmpl': 'media/mp4/%(title)s.%(ext)s',  # İndirilen MP3 dosyasının çıktı yolu ve adı
+                            'outtmpl': f'media/mp4/{video_title}.%(ext)s',  # İndirilen MP3 dosyasının çıktı yolu ve adı
                             'progress_hooks': [progress_hook],
                                 'postprocessors': [{
                                 'key': 'FFmpegVideoConvertor',
